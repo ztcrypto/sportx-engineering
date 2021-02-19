@@ -10,12 +10,15 @@
     "@0x/dev-utils": "^4.2.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "ethers": "^5.0.31",
+    "mocha": "^8.3.0",
     "moment": "^2.22.2"
   },
   "devDependencies": {},
   "scripts": {
     "test": "truffle test",
-    "migrate": "truffle migrate"
+    "migrate": "truffle migrate",
+    "test-script": "mocha script-test/*.js --timeout 100000"
   },
   "author": "Julian Wilson <julian@sportx.bet>",
   "license": "MIT"

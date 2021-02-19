@@ -83,3 +83,124 @@ Fork this repo, and _make your new repo private_. Write your code in a sub-folde
 Send `andrew@sportx.bet` the _private_ GitHub link when you're done.
 
 Good luck!
+
+## Task Explained
+
+You can import `script/index.js` to create an instance of wrapper for CommitReveal Smart Contract to interact.
+
+```
+const { newCommitReveal } = require("../script");
+...
+
+const cr = await newCommitReveal({
+    contractAddress: "0x991968Cedd8e6566cafDA185Bc5EdB849cc0765e",
+    // providerUrl: "http://localhost:8545",
+    // privateKey: "YOUR_PRIVATE_KEY",
+    // provider: new ethers.providers.JsonRpcProvider(),
+  });
+```
+
+You can initialize the instance by a providerUrl and wallet Private key or existing web3 provider or metamask ex as parameters.
+
+Choices are possible to be got like below.
+
+```
+  const [choice1, choice2] = cr.getChoices(); // YES NO
+```
+
+On commit period, you can vote on one of choices.
+
+```
+  const secret1 = "mybigsecret1";
+  const secret2 = "mybigsecret2";
+  const secret3 = "mybigsecret3";
+
+  const hash1 = await cr.vote(choice1, secret1);
+  const hash2 = await cr.vote(choice1, secret2);
+  const hash3 = await cr.vote(choice2, secret3);
+```
+
+Returned value of `vote` method is hashed secret.
+You can use this as a public key to reveal later.
+
+After the commit period, you can reveal the votes.
+
+```
+   await cr.reveal(choice1, secret1, hash1);
+   await cr.reveal(choice1, secret2, hash2);
+   await cr.reveal(choice2, secret3, hash3);
+```
+
+After all votes are revealed, you can get totalVote counts, winner information.
+
+```
+  console.log(await cr.commitsArray());
+  console.log(await cr.totalVotes());
+  console.log(await cr.getWinner());
+```
+
+You can also switch account to vote with a different address
+
+```
+  cr.switchAccount("YOUR_PRIVATE_KEY");
+```
+
+Full code below! to test on local, you can run `ganache-cli` and migrate the contract, run the code right after migration like below(because of commit period).
+
+**You need to copy the deployed contract address and intialize the instance by that contract address.**
+
+```
+  // Promisify setTimeout
+  function later(delay) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, delay);
+    });
+  }
+
+  const cr = await newCommitReveal({
+    contractAddress: "0x991968Cedd8e6566cafDA185Bc5EdB849cc0765e",
+    // providerUrl: "http://localhost:8545",
+    // privateKey: "YOUR_PRIVATE_KEY",
+    provider: new ethers.providers.JsonRpcProvider(),
+  });
+  const choice1 = cr.choice1;
+  const choice2 = cr.choice2;
+
+  const secret1 = "mybigsecret1";
+  const secret2 = "mybigsecret2";
+  const secret3 = "mybigsecret3";
+
+  const hash1 = await cr.vote(choice1, secret1);
+  const hash2 = await cr.vote(choice1, secret2);
+  const hash3 = await cr.vote(choice2, secret3);
+  await later(1000 * 120);
+
+  await cr.reveal(choice1, secret1, hash1);
+  await cr.reveal(choice1, secret2, hash2);
+  await cr.reveal(choice2, secret3, hash3);
+
+  // cr.switchAccount( "YOUR_PRIVATE_KEY");
+
+  console.log(await cr.commitsArray());
+  console.log(await cr.totalVotes()); // 3
+  console.log(await cr.getWinner()); // YES
+```
+
+### Test
+
+Because this script is independent, I made a test script to interact with deployed rinkeby contract to check total votes, winner and vote status.
+You can run by this command `npm run test-script`
+
+### Deployment
+
+Contract deployed on public rinkeby testnet and verified.
+https://rinkeby.etherscan.io/address/0xce7fd34d1e1385fa8795e01bb5f591dfacc58ebe
+
+As its commit period was 120s and already voted, revealed, you can check total votes, voteSatus and winner.
+It's also possible to get the information by interacting with my script.
+You only need to provide an infra or alchemy web3 provider.
+
+### Further improvements
+
+- You can add typescript for strict typing and documentation.
+- Make as an individual sdk and publish on NPM.
